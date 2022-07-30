@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+cassandra-driver
+python-dotenv
+email-validator
+argon2-cffi
+pytest
+jinja2
+python-multipart
+
+
+

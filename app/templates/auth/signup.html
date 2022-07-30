@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %} SignUp | {{ super() }} {% endblock %}
+{% block content %}
+<h1>SignUp</h1>
+
+<form method="POST">
+    <div>
+        <label for="email">Email</label>
+        <input type="email" name="email" />
+        <br><br>
+        <label for="password1">Password</label>
+        <input type="password" name="password1" />
+        <br><br>
+        <label for="password2">Confirm Password</label>
+        <input type="password" name="password2" />
+        <br><br>
+        <button type="submit">SignUp</button>
+        
+    </div>
+
+</form>
+
+{% endblock %}
+
+
+
