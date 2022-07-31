@@ -1,17 +1,21 @@
-import pathlib
 from cassandra.cqlengine.management import sync_table
-from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, Request, Form
-from . import config,db
+from starlette.middleware.authentication import AuthenticationMiddleware
+from . import config,db,utils
+from .users.backends import JWTCookieBackend
 from .users.models import User
+from .users.schemas import UserLoginSchema, UserSignUpSchema
+from .shortcuts import redirect, render
+from .users.decorators import login_required
 
-BASE_DIR = pathlib.Path(__file__).resolve().parent
-TEMPLATES_DIR = BASE_DIR / 'templates'
+
+
 
 app = FastAPI()
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+app.add_middleware(AuthenticationMiddleware, backend=JWTCookieBackend())
 
+from .handlers import *
 
 DB_SESSION = None
 settings = config.get_settings()
@@ -28,46 +32,75 @@ def startup():
 
 @app.get('/', response_class=HTMLResponse)
 def homepage(request: Request):
-    context = {
-        'request': request,
-        'user' : 'Naren'
-    }
-    return templates.TemplateResponse('home.html',context)
+    if request.user.is_authenticated:
+        return render(request,"dashboard.html",{},status_code=200)
+    context = {}
+    return render(request,'home.html',context)
+
+
+@app.get('/account', response_class=HTMLResponse)
+@login_required
+def account_page(request: Request):
+    context = {}
+    return render(request,'account.html',context)
 
 
 
 @app.get("/login",response_class=HTMLResponse)
 def login_get_view(request: Request):
-    return templates.TemplateResponse("auth/login.html",{
-        'request':request,
-    })
+    session_id = request.cookies.get('session_id') or None
+    return render(request,"auth/login.html",{'logged_in':session_id})
 
 @app.post("/login",response_class=HTMLResponse)
 def login_post_view(request: Request,
     email:str=Form(...),
-    password: str=Form(...)):
+    password: str=Form(...),):
 
-    print(email, password)
-    return templates.TemplateResponse("auth/login.html",{
-        'request':request,
-    })
+    raw_data={
+        'email':email,
+        'password':password,
+        
+    }
+
+    data,errors = utils.valid_schema_data_or_error(raw_data, UserLoginSchema)
+    context ={
+        'data':data,
+        'errors': errors
+    }
+    if len(errors) >0:
+        return render(request,"auth/login.html",context=context,status_code=400)
+    print(data)
+    return redirect('/', cookies=data)
 
 @app.get('/signup', response_class=HTMLResponse)
 def login_get_view(request: Request):
-    return templates.TemplateResponse("auth/signup.html",{
-        'request':request,
-    })
+    return render(request,"auth/signup.html",{})
 
 
 @app.post("/signup",response_class=HTMLResponse)
 def login_post_view(request: Request,
     email:str=Form(...),
-    password1: str=Form(...),\
+    password1: str=Form(...),
     password2: str=Form(...)):
 
-    print(email, password1, password2)
-    return templates.TemplateResponse("auth/signup.html",{
-        'request':request,
+    raw_data={
+        'email':email,
+        'password1':password1,
+        'password2':password2
+    }
+
+    data,errors = utils.valid_schema_data_or_error(raw_data, UserSignUpSchema)
+
+    if len(errors) >0:
+        return render(request,"auth/signup.html",{
+        "data" : data,
+        "errors" : errors
+    },status_code=400)
+
+
+    return redirect('/login',{
+        "data" : data,
+        "errors" : errors
     })
 
 

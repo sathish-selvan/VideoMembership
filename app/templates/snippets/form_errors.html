@@ -1,0 +1,6 @@
+{% if errors %}
+    {% for error in errors %}
+        * {{error["msg"]}}
+        <br><br>
+    {% endfor %}
+{% endif %}
