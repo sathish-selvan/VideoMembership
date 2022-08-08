@@ -1,3 +1,4 @@
+from urllib import response
 from cassandra.cqlengine.management import sync_table
 from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, Request, Form
@@ -9,8 +10,11 @@ from .users.schemas import UserLoginSchema, UserSignUpSchema
 from .shortcuts import redirect, render
 from .users.decorators import login_required
 
-
-
+from .videos.models import Video
+from .watch_event.models import WatchEvent
+from .watch_event.routers import router as watch_event_router
+from .videos.routers import router as video_router
+from .playlist.routers import router as playlist_router
 
 app = FastAPI()
 app.add_middleware(AuthenticationMiddleware, backend=JWTCookieBackend())
@@ -25,10 +29,13 @@ def startup():
     global DB_SESSION
     DB_SESSION=db.get_session()
     sync_table(User)
+    sync_table(Video)
+    sync_table(WatchEvent)
 
 
-
-
+app.include_router(video_router)
+app.include_router(watch_event_router)
+app.include_router(playlist_router)
 
 @app.get('/', response_class=HTMLResponse)
 def homepage(request: Request):
@@ -112,3 +119,9 @@ def users_list_view():
         response_json[users.email] = [users.email, users.user_id]
 
     return response_json
+
+
+
+
+
+

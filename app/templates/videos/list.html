@@ -1,0 +1,21 @@
+{% extends 'base.html'%}
+
+{% block title %} List | {{ super() }}{% endblock %}
+{% block content %}
+    <h1>List Video </h1>
+
+
+    {% for object in object_list %}
+    <li>
+        <a href="{{ object.path}}">
+        {% if not object.title%}
+        {{object.host_id}}
+        {% else %}
+        {{object.title}}
+        {% endif %}
+        </a>
+        <br>
+        <!-- {{object.render() | safe}} -->
+    </li>
+    {% endfor %}
+{% endblock %}

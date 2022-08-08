@@ -11,5 +11,15 @@
     {% block content %}
 
     {% endblock %}
+
+    <script>
+        var tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        var firstScript = document.getElementsByTagName("script")[0];
+        firstScript.parentNode.insertBefore(tag, firstScript);
+    </script>
+    <script src="https://unpkg.com/htmx.org@1.8.0" integrity="sha384-cZuAZ+ZbwkNRnrKi05G/fjBX+azI9DNOkNYysZ0I/X5ZFgsmMiBXgDZof30F5ofc" crossorigin="anonymous"></script>
+
 </body>
+
 </html>

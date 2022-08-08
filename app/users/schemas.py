@@ -19,7 +19,7 @@ class UserLoginSchema(BaseModel):
             
         password = password.get_secret_value()
         user_obj = auth.authenticate(email=email, password=password)
-        print(user_obj)
+        
         if user_obj is None:
             raise ValueError(error_msg)
 

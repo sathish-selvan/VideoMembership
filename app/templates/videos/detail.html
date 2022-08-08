@@ -1,0 +1,124 @@
+{% extends 'base.html'%}
+
+{% block title %} Detail | {{ super() }}{% endblock %}
+{% block content %}
+    <h1>Detail Video </h1>
+
+
+    <div id="yt-video" data-video-id="{{host_id}}" data-start-time="{{start_time}}" ></div>
+    <br><br>
+
+    <script>
+        var youtubeVideoDiv = document.getElementById('yt-video');
+        
+
+
+        if (youtubeVideoDiv){
+            var videoId = youtubeVideoDiv.getAttribute('data-video-id');
+            var player;
+            var watchEventEndpoint = '/api/events/watch'
+            var currentTime;
+            var isPlaying;
+            var monitorTimeout;
+            var defaultStartTime = 0;
+            var initialStartTime = parseInt( youtubeVideoDiv.getAttribute('data-start-time')) || defaultStartTime;
+            var monitorTimeInterval = 1000;
+            var timeSinceLastSave = 0;
+            var timeSaveInterval = 5000;
+            function onYouTubeIframeAPIReady() {
+                player = new YT.Player("yt-video",{
+                    height: '390',
+                    width: "640",
+                    videoId : videoId ,
+                    playerVars : {
+                        'modestbranding':1,
+                        'autoplay':1,
+                        'start':0,
+                        'playsinline':1,
+                        'controls':1,
+
+                    },
+                    events:{
+                        onReady: onPlayerReady,
+                        onStateChange: onPlayerStateChange,
+                    }
+                })
+            }
+            
+            function onPlayerReady(event){
+                player.seekTo(initialStartTime)
+                // player.playVideo()
+            }
+
+
+            function monitorCurrentPLayback() {
+                currentTime = player.getCurrentTime()
+                timeSinceLastSave += monitorTimeInterval;
+                if (isPlaying){
+                    
+                    monitorTimeout = setTimeout(monitorCurrentPLayback,monitorTimeInterval)
+                }
+
+                if (timeSinceLastSave>timeSaveInterval){
+                    timeSinceLastSave = 0
+                    storeWatchEvent()
+                }
+            }
+
+            function onPlayerStateChange(event) {
+                
+                if (event.data === YT.PlayerState.PLAYING){
+
+                    isPlaying = true
+                    monitorCurrentPLayback();
+                    
+                }
+
+                else if (event.data === YT.PlayerState.PAUSED){
+                    isPlaying = false
+                    clearTimeout(monitorTimeout);
+                    monitorCurrentPLayback();
+                    storeWatchEvent();
+                }
+
+                else if(event.data === YT.PlayerState.ENDED){
+                    isPlaying = false
+                    clearTimeout(monitorTimeout);
+                    monitorCurrentPLayback();
+                    storeWatchEvent();
+                }
+            }
+
+            function storeWatchEvent(){
+                var duration = player.getDuration();
+                var data = {
+                    path: window.location.pathname,
+                    end_time: currentTime,
+                    start_time:initialStartTime,
+                    duration:duration,
+                    host_id: videoId,
+                    complete: (duration * .98) < currentTime
+                }
+
+
+                var reqOptions = {
+                    method : 'POST',
+                    headers : {
+                        'content-type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                }
+                fetch(watchEventEndpoint,reqOptions)
+                .then(response=>response.json())
+                .then(data=>{
+                    // console.log('success',data)
+                })
+                .catch(err=>{
+                    // console.log('error',err)
+                })
+            }
+        }
+        
+    </script>
+
+{% endblock %}

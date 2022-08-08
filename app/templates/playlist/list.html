@@ -1,0 +1,21 @@
+{% extends 'base.html'%}
+
+{% block title %} List | {{ super() }}{% endblock %}
+{% block content %}
+    <h1>Playlist </h1>
+
+
+    {% for object in object_list %}
+    <li>
+        <a href="{{ object.path }}">
+        {% if not object.title%}
+        {{object.db_id}}
+        {% else %}
+        {{object.title}}
+        {% endif %}
+        </a>
+        <br>
+        
+    </li>
+    {% endfor %}
+{% endblock %}

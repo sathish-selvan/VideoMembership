@@ -1,0 +1,16 @@
+<div>
+
+    <form method="POST" action="/videos/create" hx-post="/videos/create">
+        <div>
+            <label for="url">Video URL</label>
+            <input type="text" name="url" value='{% if url %}{{url}}{%endif%}' required/>
+            <br><br>
+            <label for="title">Video Title</label>
+            <input type="text" name="title" value='{% if title %}{{title}}{%endif%}' required/>
+            <br><br>
+            <button type="submit">Add</button>
+            
+        </div>
+
+    </form>
+</div>
