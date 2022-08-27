@@ -1,24 +1,31 @@
 {% extends 'base.html' %}
 {% block title %} Create Video | {{ super() }} {% endblock %}
 {% block content %}
-<h1>Add Playlist</h1>
+<h1>Create Playlist</h1>
 
 {% include 'snippets/form_errors.html' %}
 
-
-<form method="POST">
-    <div>
-        <!-- <label for="url">Video URL</label>
-        <input type="text" name="url" value='{% if url %}{{url}}{%endif%}' required/>
-        <br><br> -->
-        <label for="title">Playlist Title</label>
-        <input type="text" name="title" value='{% if title %}{{title}}{%endif%}' required/>
-        <br><br>
-        <button type="submit">Add Playlist</button>
+<div class="row">
+    <div class="col-2">
+        {% include 'playlist/sidebar.html' %}
         
     </div>
 
-</form>
+    <div class="col-10">
+        <form method="POST">
+            <div>
+                <!-- <label for="url">Video URL</label>
+                <input type="text" name="url" value='{% if url %}{{url}}{%endif%}' required/>
+                <br><br> -->
+                <label for="title">Playlist Title</label>
+                <input class="form-control" type="text" name="title" value='{% if title %}{{title}}{%endif%}' required/>
+                
+                <button class="btn btn-primary mt-2" type="submit">Add Playlist</button>
+                
+            </div>
 
+        </form>
+    </div>
+</div>
 
 {% endblock %}

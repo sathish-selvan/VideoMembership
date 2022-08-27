@@ -8,6 +8,6 @@ pytest
 jinja2
 python-multipart
 python-jose[crpytography]
-
+algoliasearch
 
 

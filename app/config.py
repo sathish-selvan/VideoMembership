@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     db_client_secret : str = Field(..., env="ASTRADB_CLIENT_SECRET")
     secret_key : str = Field(...,env='SECRET_KEY')
     algo : str = Field(...,env='ALGO')
+    algolia_index_name:str
+    algolia_app_id:str
+    algolia_api_key:str
+    
 
     class Config:
         env_file = '.env'

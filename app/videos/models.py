@@ -6,6 +6,8 @@ from app.config import get_settings
 from app.users.models import User
 from app.users.exceptions import InvalidUserIdException
 from .exceptions import VideoAddedException,InvalidYoutubeVideoURLException
+from cassandra.cqlengine.query import (DoesNotExist, MultipleObjectsReturned)
+
 
 settings = get_settings()
 from .extrators import extract_video_id
@@ -36,14 +38,49 @@ class Video(Model):
         t =templates.get_template(template_path)
         return t.render(context)
 
+    def update_video_url(self, url, save=True):
+        host_id = extract_video_id(url)
+        if not host_id:
+            return None
+        self.url = url
+        
+        self.host_id = host_id
+        if save:
+            print("saved")
+            self.save()
+        return url
+
 
     @property
     def path(self):
         return f'/videos/{self.host_id}'
 
-        
+
     @staticmethod
-    def add_video(url,title, user_id=None):
+    def get_or_create_video(url, user_id=None, **kwargs):
+        host_id = extract_video_id(url)
+        obj = None
+        created = False
+        try:
+            obj = Video.objects.get(host_id=host_id)
+        except MultipleObjectsReturned:
+            q = Video.objects.allow_filtering().filter(host_id=host_id)
+            obj = q.first()
+
+        except DoesNotExist:
+            obj = Video.add_video(url,user_id, **kwargs)
+            created = True
+
+        except:
+            raise Exception('Invalid Request')
+
+        return obj, created
+
+    
+
+
+    @staticmethod
+    def add_video(url, user_id=None,**kwagrs):
         host_id = extract_video_id(url)
         if host_id is None:
             raise InvalidYoutubeVideoURLException
@@ -57,4 +94,4 @@ class Video(Model):
         if q.count() != 0:
             raise VideoAddedException
 
-        return Video.create(host_id=host_id, title=title ,user_id=user_id,url=url)
+        return Video.create(host_id=host_id,user_id=user_id,url=url, **kwagrs)

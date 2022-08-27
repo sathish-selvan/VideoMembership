@@ -1,0 +1,15 @@
+<div class="my-2 border rounded p-3">
+    {% include 'snippets/form_errors.html' %}
+
+    <form method="POST" action="/playlist/{{db_id}}/add-video" hx-post="/playlist/{{db_id}}/add-video">
+        <div>
+            <label for="url">Video URL</label>
+            <input class="form-control" type="text" name="url" value='{% if url %}{{url}}{%endif%}' required/>
+            <label for="title">Video Title</label>
+            <input class="form-control" type="text" name="title" value='{% if title %}{{title}}{%endif%}' required/>
+            <button class="btn btn-primary mt-2" type="submit">Add</button>
+            
+        </div>
+
+    </form>
+</div>

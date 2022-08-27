@@ -5,20 +5,29 @@
 
 {% include 'snippets/form_errors.html' %}
 
-
-<form method="POST">
-    <div>
-        <label for="url">Video URL</label>
-        <input type="text" name="url" value='{% if url %}{{url}}{%endif%}' required/>
-        <br><br>
-        <label for="title">Video Title</label>
-        <input type="text" name="title" value='{% if title %}{{title}}{%endif%}' required/>
-        <br><br>
-        <button type="submit">Add</button>
+<div class="row">
+    <div class="col-2">
+        {% include 'videos/sidebar.html' %}
         
     </div>
 
-</form>
+    <div class="col-10">
+
+        <form method="POST">
+            <div>
+                <label  for="url">Video URL</label>
+                <input class="form-control" type="text" name="url" value='{% if url %}{{url}}{%endif%}' required/>
+
+                <label  for="title">Video Title</label>
+                <input class="form-control" type="text" name="title" value='{% if title %}{{title}}{%endif%}' required/>
+
+                <button class="btn btn-primary mt-2" type="submit">Add</button>
+                
+            </div>
+
+        </form>
+    </div>
+</div>
 
 
 {% endblock %}

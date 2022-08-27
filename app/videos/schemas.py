@@ -26,10 +26,13 @@ class VideoCreateSchema(BaseModel):
         url = values.get('url')
         user_id = values.get('user_id')
         title = values.get('title')
+        extra_data = {}
+        if title is not None:
+            extra_data['title'] = title
 
         video_obj = None
         try:
-            video_obj = Video.add_video(url,title,user_id)
+            video_obj = Video.add_video(url,user_id,**extra_data)
         except VideoAddedException as e:
             raise ValueError(f'{url} is already exists')
         except InvalidUserIdException as e:
@@ -48,4 +51,16 @@ class VideoCreateSchema(BaseModel):
         return video_obj.as_data()
 
 
+class VideoEditSchema(BaseModel):
+    url: str
+    title: str
+    user_id: str or None
 
+    @validator('url')
+    def validate_youtube_url(cls, v, values, **kwargs):
+        url = v
+        video_id = extract_video_id(url)
+        if video_id is None:
+            raise ValueError(f'{url} is not a valid YouTube URL')
+
+        return url

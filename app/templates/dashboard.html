@@ -3,9 +3,13 @@
 {% block title %} Dashboard | {{super()}}{% endblock %}
 
 {% block content %}
+<div class='text-center col-md-4 col-sm-6 col-12 mx-auto'>
+<h1>Hi Useless </h1>
 
-Welcome back User
+<h3> Search for content</h3>
 
+{% include'search/search_form.html' %}
+</div>
 {% endblock %}
 
 

@@ -1,15 +1,17 @@
+from ast import Num
 from urllib import response
 from cassandra.cqlengine.management import sync_table
 from fastapi.responses import HTMLResponse
 from fastapi import FastAPI, Request, Form
 from starlette.middleware.authentication import AuthenticationMiddleware
 from . import config,db,utils
+from .indexing.client import (update_index, search_index)
 from .users.backends import JWTCookieBackend
 from .users.models import User
 from .users.schemas import UserLoginSchema, UserSignUpSchema
 from .shortcuts import redirect, render
 from .users.decorators import login_required
-
+from typing import Optional
 from .videos.models import Video
 from .watch_event.models import WatchEvent
 from .watch_event.routers import router as watch_event_router
@@ -61,7 +63,8 @@ def login_get_view(request: Request):
 @app.post("/login",response_class=HTMLResponse)
 def login_post_view(request: Request,
     email:str=Form(...),
-    password: str=Form(...),):
+    password: str=Form(...),
+    next: Optional[str]= '/'):
 
     raw_data={
         'email':email,
@@ -76,8 +79,19 @@ def login_post_view(request: Request,
     }
     if len(errors) >0:
         return render(request,"auth/login.html",context=context,status_code=400)
-    print(data)
-    return redirect('/', cookies=data)
+
+    if "http://127.0.0.1" not in next:
+        next = '/'
+
+    return redirect(next, cookies=data)
+
+@app.get("/logout",response_class=HTMLResponse)
+def logout_get_view(request: Request):
+    return render(request,"auth/logout.html",{})
+
+@app.post("/logout",response_class=HTMLResponse)
+def logout_post_view(request: Request):
+    return redirect('/login',remove_session=True)
 
 @app.get('/signup', response_class=HTMLResponse)
 def login_get_view(request: Request):
@@ -111,14 +125,27 @@ def login_post_view(request: Request,
     })
 
 
-@app.get('/users')
-def users_list_view():
-    q = User.objects.all()
-    response_json={}
-    for users in q:
-        response_json[users.email] = [users.email, users.user_id]
+@app.post("/update-index",response_class=HTMLResponse)
+def htmx_update_index_view(request:Request):
+    count = update_index()
+    return HTMLResponse(f"({count}) Refreshed")
 
-    return response_json
+@app.get('/search')
+def search_detail_view(request:Request, q:Optional[str]=None):
+    query = None
+    if q is not None:
+        query = q
+        results = search_index(query)
+        hits = results.get('hits') or []
+        num_hits = results.get('nbHits')
+        context = {
+            'query':q,
+            'hits':hits,
+            'num_hits':num_hits
+        }
+
+
+    return render(request, 'search/search_detail.html', context)
 
 
 
